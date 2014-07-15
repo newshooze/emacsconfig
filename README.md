@@ -1,0 +1,4 @@
+emacsconfig
+===========
+
+emacs configuration
