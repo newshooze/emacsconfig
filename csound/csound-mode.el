@@ -3,7 +3,7 @@
 (add-to-list 'auto-mode-alist '("\\.sco\\'" . csound-mode))
 (add-to-list 'magic-mode-alist '("<CsoundSynthesi.*>$" . csound-mode))
 
-(setq help-file "~/.vim/doc/csound.help.gz") ; uses vim style help
+(setq help-file "~/.vim/doc/csound.help") ; uses vim style help
 
 (setq csound-comment-delimiter '("/*" "*/")) 
 (setq csound-comment '(";")) 
@@ -112,7 +112,7 @@
 (defun csound-lookup-func ()
 	(setq-local a (thing-at-point 'word))
 	(progn 
-		(setq-local command-line (concat "zgrep -Pzo '(?s)\\*" a "\\*.*?=$.*?=$' " help-file))
+		(setq-local command-line (concat "grep -Pzo '(?s)\\*" a "\\*.*?=$.*?=$' " help-file))
 		(setq-local compilation-scroll-output 0)
 		(compile command-line)
 		(setq cur (selected-window))
