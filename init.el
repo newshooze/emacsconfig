@@ -23,21 +23,21 @@
 (setq comint-move-point-for-output t)
 (setq compilation-always-kill t)
 (setq compilation-scroll-output 1)
-(setq	completion-ignore-case t)
+(setq completion-ignore-case t)
 (setq confirm-nonexistent-file-or-buffer nil)
 (setq create-lockfiles nil)
 (setq custom-safe-themes t)
 (setq custom-theme-directory (expand-file-name "themes" user-emacs-directory))
 (setq default-truncate-lines t)
-(setq	inhibit-startup-echo-area-message t)
+(setq font-lock-maximum-decoration t)
+(setq inhibit-startup-echo-area-message t)
 (setq inhibit-startup-message t)
 (setq	initial-scratch-message ";scratch\n\n")
 (setq line-number-mode t)
-(setq	read-file-name-ignore-completion t)
+(setq read-file-name-ignore-completion t)
 (setq scroll-margin 0)
 (setq scroll-step 1)
 (setq tab-stop-list (number-sequence 2 100 2))
-
 
 (require 'saveplace)
 (setq save-place-file (expand-file-name "settings/savedplaces" user-emacs-directory))
@@ -45,16 +45,20 @@
 (add-to-list 'load-path (concat user-emacs-directory "elpa/company"))
 (require 'company)
 ;company isn't useful in csound-mode
-(setq company-global-modes '(not csound-mode))
+(setq company-global-modes '(not csound-mode not vimhelp-mode))
 
 (add-to-list 'load-path (concat user-emacs-directory "evil"))
 (require 'evil)
 
 (add-to-list 'load-path (concat user-emacs-directory "csound"))
 (require 'csound-mode)
-;
+
+(add-to-list 'load-path (concat user-emacs-directory "vimhelp"))
+(require 'vimhelp-mode)
+
 (add-to-list 'default-frame-alist '(tty-color-mode . 1))
 
+(add-to-list 'load-path (concat user-emacs-directory "themes"))
 (load-theme 'csd)
 
 ;use vim style scroll up / scroll down
