@@ -1,10 +1,15 @@
-; File: init.el
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages"))
+(package-initialize)
+
 (global-set-key (kbd "<f4>") 'kill-emacs)
-(global-set-key (kbd "<S-f4>") '(save-buffers-kill-emacs t))
-(global-set-key (kbd "<f8>") 'eval-last-sexp)
-(global-set-key (kbd "<S-f8>") 'eval-buffer)
 (global-set-key (kbd "<f9>") 'next-buffer)
 (global-set-key (kbd "<S-f9>") 'previous-buffer)
+(global-set-key (kbd "C-c n") 'next-buffer)
+(global-set-key (kbd "C-c C-n") 'next-buffer)
+(global-set-key (kbd "C-c C-p") 'previous-buffer)
+(global-set-key (kbd "C-c p") 'previous-buffer)
+(global-set-key (kbd "C-c k") 'kill-buffer-and-window) 
 
 (if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
@@ -16,36 +21,46 @@
 (setq-default cursor-in-non-selected-windows 'hollow)
 (setq-default cursor-type '(hbar . 2))
 (setq-default indent-tabs-mode 1)
-(setq-default save-place t)
 (setq-default tab-width 2)
+(setq-default truncate-lines t)
+;(setq-default same-window-regexps '("^.*$"))
+;(setq-default same-window-regexps '(not "^\*compilation\*")) 
 
 (setq column-number-mode t)
 (setq comint-move-point-for-output t)
-(setq compilation-always-kill t)
+(setq compilation-always-kill nil)
 (setq compilation-scroll-output 1)
 (setq completion-ignore-case t)
 (setq confirm-nonexistent-file-or-buffer nil)
 (setq create-lockfiles nil)
 (setq custom-safe-themes t)
 (setq custom-theme-directory (expand-file-name "themes" user-emacs-directory))
-(setq default-truncate-lines t)
 (setq font-lock-maximum-decoration t)
 (setq inhibit-startup-echo-area-message t)
 (setq inhibit-startup-message t)
-(setq	initial-scratch-message ";scratch\n\n")
 (setq line-number-mode t)
 (setq read-file-name-ignore-completion t)
 (setq scroll-margin 0)
 (setq scroll-step 1)
 (setq tab-stop-list (number-sequence 2 100 2))
 
-(require 'saveplace)
-(setq save-place-file (expand-file-name "settings/savedplaces" user-emacs-directory))
+(add-to-list 'display-buffer-alist '("*eshell*" display-buffer-same-window))
+(add-to-list 'display-buffer-alist '("*scratch*" display-buffer-same-window))
+(add-to-list 'display-buffer-alist '("*info*" display-buffer-same-window))
+(add-to-list 'display-buffer-alist '("*Help*" display-buffer-same-window))
+(add-to-list 'display-buffer-alist '("*grep*" display-buffer-same-window))
+(add-to-list 'display-buffer-alist '("*Completions*" display-buffer-same-window))
+(add-to-list 'display-buffer-alist '("*Warnings*" display-buffer-same-window))
+(add-to-list 'display-buffer-alist '("*Messages*" display-buffer-same-window))
+(add-to-list 'display-buffer-alist '("*Backtrace*" display-buffer-same-window))
+(add-to-list 'display-buffer-alist '("*Buffer List*" display-buffer-same-window))
+(add-to-list 'display-buffer-alist '((not "*Compilation*") ".*" display-buffer-same-window))
+
+(add-to-list 'default-frame-alist '(tty-color-mode . 1))
+(add-to-list 'initial-frame-alist '(fullscreen . maximized))
 
 (add-to-list 'load-path (concat user-emacs-directory "elpa/company"))
 (require 'company)
-;company isn't useful in csound-mode
-(setq company-global-modes '(not csound-mode not vimhelp-mode))
 
 (add-to-list 'load-path (concat user-emacs-directory "evil"))
 (require 'evil)
@@ -56,17 +71,76 @@
 (add-to-list 'load-path (concat user-emacs-directory "vimhelp"))
 (require 'vimhelp-mode)
 
-(add-to-list 'default-frame-alist '(tty-color-mode . 1))
-
 (add-to-list 'load-path (concat user-emacs-directory "themes"))
-(load-theme 'csd)
+(load-theme 'pasta)
 
-;use vim style scroll up / scroll down
+(defun kill-output-buffers()
+	"FUCK these buffers"
+	(interactive)
+	;(kill-matching-buffers "^\*.*\*" t t)
+	(ignore-errors delete-other-windows))
+
+(evil-mode)
+
 (define-key evil-insert-state-map (kbd "TAB") 'tab-to-tab-stop)
 (define-key evil-normal-state-map (kbd "C-u") 'evil-scroll-up)
 (define-key evil-normal-state-map (kbd "C-d") 'evil-scroll-down)
+(define-key evil-normal-state-map (kbd "T") 'evil-next-buffer)
+(define-key evil-motion-state-map (kbd "T") 'evil-next-buffer)
+(define-key evil-normal-state-map (kbd "Y") 'evil-prev-buffer)
+(define-key evil-motion-state-map (kbd "Y") 'evil-prev-buffer)
+;(define-key evil-normal-state-map [escape] 'kill-output-buffers)
+(define-key evil-normal-state-map (kbd "`") 'eshell)
+(define-key evil-normal-state-map (kbd "C-n") 'next-line)
+(define-key evil-normal-state-map (kbd "C-p") 'previous-line)
+
+
+(defun kill-compilation-window()
+	(interactive)
+  (delete-window (get-buffer-window "*compilation*"))
+	(kill-buffer "*compilation*"))
+
+(defun run-make()
+	"Compile"
+	(interactive)
+	(setq make-args "make debug")
+	(compile make-args))
+
+(evil-define-key 'normal emacs-lisp-mode-map [f6] 'eval-buffer)
+(evil-define-key 'normal lisp-interaction-mode-map [f6] 'eval-buffer)
+(evil-define-key 'normal lisp-interaction-mode-map [f8] 'eval-last-sexp)
+
+;(add-hook 'c-mode-hook (lambda() () (local-set-key (kbd "\e") 'kill-compilation-window)))
+(evil-define-key 'normal c-mode-map [f8] 'run-make)
+(evil-define-key 'normal c-mode-map [escape] 'kill-compilation-window)
+(evil-define-key 'normal c-mode-map (kbd "c c") 'switch-to-buffer-in-dedicated-window)
+
+(add-hook 'help-mode-hook (lambda() () (local-set-key (kbd "\e") 'kill-this-buffer)))
+(add-hook 'help-mode-hook (lambda() () (local-set-key (kbd "T") 'next-buffer)))
+(add-hook 'help-mode-hook (lambda() () (local-set-key (kbd "Y") 'previous-buffer)))
+(add-hook 'backtrace-mode-hook (lambda() () (local-set-key (kbd "\e") 'kill-this-buffer)))
+(add-hook 'backtrace-mode-hook (lambda() () (local-set-key (kbd "T") 'next-buffer)))
+(add-hook 'backtrace-mode-hook (lambda() () (local-set-key (kbd "Y") 'previous-buffer)))
+(add-hook 'debugger-mode-hook (lambda() () (local-set-key (kbd "\e") 'kill-this-buffer)))
+(add-hook 'debugger-mode-hook (lambda() () (local-set-key (kbd "T") 'next-buffer)))
+(add-hook 'debugger-mode-hook (lambda() () (local-set-key (kbd "Y") 'previous-buffer)))
+(add-hook 'completion-list-mode-hook (lambda() () (local-set-key (kbd "\e") 'kill-this-buffer)))
+(add-hook 'completion-list-mode-hook (lambda() () (local-set-key (kbd "T") 'next-buffer)))
+(add-hook 'completion-list-mode-hook (lambda() () (local-set-key (kbd "Y") 'previous-buffer)))
+(add-hook 'minibuffer-setup-hook (lambda() () (local-set-key (kbd "\e") (kbd "C-g"))))
+
+; eshell
+(defun eshell-start-insert()
+		(interactive)
+	(evil-goto-line)
+	(evil-append-line nil))
+
+(evil-define-key 'normal eshell-mode-map (kbd "a") 'eshell-start-insert)
+(evil-define-key 'normal eshell-mode-map (kbd "i") 'eshell-start-insert)
+(evil-define-key 'normal eshell-mode-map (kbd "A") 'eshell-start-insert)
+(evil-define-key 'normal eshell-mode-map (kbd "`") 'kill-this-buffer)
+
 
 ; Start company (complete anything)
+(add-hook 'compilation-finish-functions 'make-complete-function t t)
 (add-hook 'after-init-hook 'global-company-mode)
-; Start in vi(m) mode
-(evil-mode)
